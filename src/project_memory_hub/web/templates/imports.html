@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="split">
+  <div>
+    <p class="kicker" data-i18n="imports.official_only">Official export only</p>
+    <h2>ChatGPT ZIP</h2>
+    <p data-i18n="imports.description">The selected file is streamed through a private temporary file, validated, and removed after every outcome.</p>
+  </div>
+  <form class="upload-panel" method="post" action="/imports/chatgpt" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label><span data-i18n="imports.official_zip">Official export ZIP</span> <input type="file" name="archive" accept=".zip,application/zip" required></label>
+    <label class="check"><input type="checkbox" name="dry_run" value="true" checked> <span data-i18n="imports.dry_run_first">Dry run first</span></label>
+    <button type="submit" data-i18n="imports.inspect">Inspect locally</button>
+  </form>
+</section>
+{% if import_notice %}
+<p class="notice" role="status">
+  {% if import_notice.status == "checked" %}<span data-i18n-count="imports.dry_run_matches" data-count="{{ import_notice.matches }}">Dry-run matches: {{ import_notice.matches }}.</span>{% else %}<span data-i18n-count="imports.imported_matches" data-count="{{ import_notice.matches }}">Imported matches: {{ import_notice.matches }}.</span>{% endif %}
+  <span data-i18n-count="imports.confirmation_required" data-count="{{ import_notice.confirmations }}">Confirmation required: {{ import_notice.confirmations }}.</span>
+</p>
+{% endif %}
+<p class="notice" data-i18n="imports.privacy_notice">Client filenames, archive member names, and conversation text are never rendered on this page.</p>
+{% endblock %}

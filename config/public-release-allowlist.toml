@@ -1,0 +1,225 @@
+schema_version = 1
+
+# Every exemption is bound to one reviewed blob and the exact scanner rules below.
+
+[[exemptions]]
+path = ".github/ISSUE_TEMPLATE/bug_report.yml"
+sha256 = "b4eb92509b84285e4d6f687cdd895518fe5e0796daf483861f5cc331e0c60b78"
+rules = ["database_dump"]
+reason = "Issue template names prohibited database attachments; it contains no dump."
+
+[[exemptions]]
+path = "docs/superpowers/plans/2026-07-12-project-memory-hub.md"
+sha256 = "d2598b00636059fd07f462fc846c791b17b7fb9b324ed551c1dab41ca30b9540"
+rules = ["session_body"]
+reason = "Design plan documents scanner rule examples without private session data."
+
+[[exemptions]]
+path = "docs/superpowers/plans/2026-07-18-public-beta-hardening.md"
+sha256 = "826c026a8d14fef70fbd04719ed59f3a87a2a9d3875fdc7e466c84d4b5e221bb"
+rules = ["database_dump"]
+reason = "Design plan documents scanner rule examples without private session data."
+
+[[exemptions]]
+path = "src/project_memory_hub/storage/migrations/0001_initial.sql"
+sha256 = "4e9cab68e34d9751db374a155fba02528f45b20c0c72592a567fbc16ce1bf890"
+rules = ["database_dump"]
+reason = "Database schema migration is product source, not a data dump."
+
+[[exemptions]]
+path = "src/project_memory_hub/storage/migrations/0008_project_path_identity.sql"
+sha256 = "08e8b5227c8683ca2e0c54287b6b1fb7dbaeb716083c3e5d788179bc88d3a044"
+rules = ["database_dump"]
+reason = "Database schema migration is product source, not a data dump."
+
+[[exemptions]]
+path = "src/project_memory_hub/storage/migrations/0011_pending_capture_history.sql"
+sha256 = "5b7761528bdf95e112a2bfcbe72061e753c7401b67d008d4298f8fcf6735e6d7"
+rules = ["database_dump"]
+reason = "Database schema migration is product source, not a data dump."
+
+[[exemptions]]
+path = "tests/e2e/test_memory_hub.py"
+sha256 = "71b2d0f7551262ac2ab1060a9c55927f10a86c40dacd007b493573196969e284"
+rules = ["session_body", "token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/fixtures/codex/aborted-turn.jsonl"
+sha256 = "39a069ce152434f2fdd04be57fe647f0a9ec022a115d422e96b40e9ec6e036ec"
+rules = ["session_body"]
+reason = "Synthetic Codex session fixture reviewed for adapter coverage."
+
+[[exemptions]]
+path = "tests/fixtures/codex/completed-turn.jsonl"
+sha256 = "58b7a39863bd34038b16569624a84261381f9ccb873093311b1fa73fb16e7001"
+rules = ["session_body"]
+reason = "Synthetic Codex session fixture reviewed for adapter coverage."
+
+[[exemptions]]
+path = "tests/fixtures/codex/managed-completed-turn.jsonl"
+sha256 = "10fe4aa54f45e1fd926917f86134f95d1684b7b68e5970eb91dd86c11744edc9"
+rules = ["session_body"]
+reason = "Synthetic Codex session fixture reviewed for adapter coverage."
+
+[[exemptions]]
+path = "tests/integration/test_chatgpt_adapter.py"
+sha256 = "382a4a0bb6a0a30a0c8ee58a1f581e3323dfbae9b43c6c79ce17990d7eddc269"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_cli_core.py"
+sha256 = "20b7594c061bd3345e53c46207f2de4cf43e03b883b8aff2d9bdddec85135a04"
+rules = ["session_body", "unknown_uuid"]
+reason = "Fixed fictional Codex session and UUID vectors reviewed for CLI coverage."
+
+[[exemptions]]
+path = "tests/integration/test_cli_display_coverage.py"
+sha256 = "ff7556eabd3663b85b9abdcfd7567da40780f0ca0e2ccc0edac566a9d0e907c1"
+rules = ["session_body", "unknown_uuid"]
+reason = "Fixed fictional Codex session and UUID vectors reviewed for CLI display coverage."
+
+[[exemptions]]
+path = "tests/integration/test_cli_proposals.py"
+sha256 = "51a666bd9be4179f98d5c1c33812b0556c9908f05bca4439c32ade8b80c05028"
+rules = ["unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_cli_public_beta_ux.py"
+sha256 = "7f8513116d7a1b8c3d9355803dbe8d601a11cc216245d924133ffb9bab0b4f48"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_codex_adapter.py"
+sha256 = "2cd595aa57cae958249bc6879927cdab29b9aa9e7808471ee9e5260aeb0e7863"
+rules = ["session_body", "token_like", "unknown_uuid"]
+reason = "Fixed fictional Codex session, credential, and UUID vectors reviewed for adapter coverage."
+
+[[exemptions]]
+path = "tests/integration/test_codex_adapter_coverage.py"
+sha256 = "85ff295ff725c096fc91a91a78f26fbefe0bcc87876afef0f818151c3a948893"
+rules = ["session_body", "unknown_uuid"]
+reason = "Fixed fictional Codex session and UUID vectors reviewed for adapter edge coverage."
+
+[[exemptions]]
+path = "tests/integration/test_deferred_recovery.py"
+sha256 = "52564273a35df373d5c68167c354eca2801b998853670bfb9c4851df0cbf4649"
+rules = ["session_body"]
+reason = "Synthetic Codex session records reviewed for recovery coverage."
+
+[[exemptions]]
+path = "tests/integration/test_pending_recovery.py"
+sha256 = "b95f5ad7e55a41456427f6685838cfab5666801729bef6b8ade4a32d3c1d8a71"
+rules = ["session_body"]
+reason = "Synthetic Codex session records reviewed for recovery coverage."
+
+[[exemptions]]
+path = "tests/integration/test_reconcile.py"
+sha256 = "15e28517543d6cec779aa80cd4f51ce9a1cfe7042f3ecd63673ee37fef3d430a"
+rules = ["session_body"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_reconcile_hardening.py"
+sha256 = "9b7fdece3290e36aa4c7677c005cd13c31f7d50ca714b0ae8eb48af9f5596d9e"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_reconcile_improvement.py"
+sha256 = "92ef6647a60d40f3941bff5603af4e66cd7bb8a1b0c1d29c3316251dbaf1b611"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_retry_proposals_coverage.py"
+sha256 = "b09071137204bbb7315237b749a860efa2187ef7c3049d3b1ee9648be3297f11"
+rules = ["token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_web_proposals.py"
+sha256 = "1dbd0a56220cc6ffeea60ae6a63adf71867f8da07c1b275f15cf61c509d46c5f"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/integration/test_web_redirect_coverage.py"
+sha256 = "74450851b5027d35904c9b70cbb15704d65b9542f090f4dede1dbf450ca84af8"
+rules = ["unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/demo/test_privacy.py"
+sha256 = "328d028721cef566533d13d1e5bf67fd9460d35176f561de620e8b4c96e157fa"
+rules = ["token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/improvement/test_proposals.py"
+sha256 = "83fbc2292960a0947cf1e65f187e144533c7b4db64800e4212bb9aa93469e136"
+rules = ["token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/security/test_capture_privacy.py"
+sha256 = "795ad1652cdf6ebd675fac1f5758fdd9243e5aa2bc5c5305d4769ea7c5434eda"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/security/test_identifiers.py"
+sha256 = "f0f6b027c55c2d7296f40aad56e8e8ccdaa2d07d98d9d8aede436c8b86620c9f"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/security/test_redaction.py"
+sha256 = "9bba95594252d886431383fde123cbdaf64de884c95d0696ae169dfad5fa0b42"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/services/test_capture.py"
+sha256 = "8fa7d8ba652a27b9986416ada5f0d525b26d0cfd09e256f6e1a10729b5c2efac"
+rules = ["token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/services/test_compaction.py"
+sha256 = "ec98a6fbd9f88ce93c08511c96dbf209e50de403623eb789893be770ace0a0fb"
+rules = ["token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/services/test_promotions.py"
+sha256 = "eac9e47b0989813a717b35b6fb475aa4a0658db21bc7847f58b71126b369fa29"
+rules = ["token_like"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/storage/test_database.py"
+sha256 = "f65e7ecc8a72ed261db29a2b7d6e77e5f83a5a815a3197634658f1d0969ccaf8"
+rules = ["database_dump", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/storage/test_projects.py"
+sha256 = "4d8bb76e898f9246a2c43156f6f7ea385f14798849623060af0f785905897e58"
+rules = ["unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."
+
+[[exemptions]]
+path = "tests/unit/test_mcp_broker.py"
+sha256 = "1978bc16c1f3ede3b88222b8b53562165cbf17881fc7bba3b0130b34b1cedd75"
+rules = ["unknown_uuid"]
+reason = "Synthetic correlation identifiers reviewed for MCP broker coverage."
+
+[[exemptions]]
+path = "tests/unit/test_public_privacy_audit.py"
+sha256 = "c2bbef26563259aaa900256cbbe93adb29577c0c455d8781e23c28053522b738"
+rules = ["database_dump", "session_body", "token_like", "unknown_uuid"]
+reason = "Synthetic security test vector reviewed for public release."

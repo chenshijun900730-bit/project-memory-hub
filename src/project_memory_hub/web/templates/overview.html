@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+{% if setup_completed_notice %}<p class="notice" role="status" data-i18n="setup.completed_notice">Local setup is complete. Restart before changed settings affect this process, then preview discovery.</p>{% endif %}
+<section class="lede">
+  <p class="kicker" data-i18n="overview.lede">A truthful view of what the local store knows—and what it does not.</p>
+  <p class="health-label"><span data-i18n="overview.reconcile_status">Reconcile startup status:</span> <strong data-i18n="{{ request.app.state.startup_reconcile_status }}">{{ request.app.state.startup_reconcile_status }}</strong></p>
+</section>
+{% if not setup.setup_completed %}
+<section class="notice setup-callout" data-setup-incomplete="true" aria-labelledby="setup-callout-heading">
+  <h2 id="setup-callout-heading" data-i18n="setup.callout_heading">Finish first-run setup</h2>
+  <p data-i18n="setup.callout_body">Review project roots, registered sources, model isolation, and the desired daily time.</p>
+  <a class="button-link" href="/setup" data-i18n="setup.open">Open setup</a>
+</section>
+{% endif %}
+<section class="metric-grid" aria-label="Stored totals" data-i18n-aria-label="overview.stored_totals">
+  <article class="metric"><strong>{{ overview.project_count }}</strong><span data-i18n-count="overview.project_count" data-count="{{ overview.project_count }}">{{ overview.project_count }} project{% if overview.project_count != 1 %}s{% endif %}</span></article>
+  <article class="metric"><strong>{{ overview.fact_count }}</strong><span data-i18n="overview.shared_facts">shared facts</span></article>
+  <article class="metric"><strong>{{ overview.behavior_count }}</strong><span data-i18n-count="overview.behavior_count" data-count="{{ overview.behavior_count }}">{{ overview.behavior_count }} behavior memor{% if overview.behavior_count == 1 %}y{% else %}ies{% endif %}</span></article>
+  <article class="metric warning"><strong>{{ overview.permission_error_count }}</strong><span data-i18n-count="overview.permission_error_count" data-count="{{ overview.permission_error_count }}">{{ overview.permission_error_count }} permission error{% if overview.permission_error_count != 1 %}s{% endif %}</span></article>
+</section>
+<section class="next-safe-step" data-next-safe-step="{{ next_safe_step.kind.value }}" aria-labelledby="next-safe-step-heading">
+  <p class="eyebrow" data-i18n="overview.next_safe_step_eyebrow">Guided first run</p>
+  <h2 id="next-safe-step-heading" data-i18n="overview.next_safe_step">Next safe step</h2>
+  <p data-i18n="overview.next_step.{{ next_safe_step.kind.value }}.reason">{{ next_safe_step.reason }}</p>
+  <div class="command-block"><code>{{ next_safe_step.command }}</code></div>
+  <p><strong data-i18n="empty.success_condition">Success condition:</strong> <span data-i18n="overview.next_step.{{ next_safe_step.kind.value }}.success">{{ next_safe_step.success_condition }}</span></p>
+</section>
+<section class="ledger">
+  <h2 data-i18n="overview.recorded_operations">Recorded operations</h2>
+  <dl>
+    <div><dt data-i18n="overview.last_reconcile_success">Last reconcile success</dt><dd data-i18n="{{ overview.last_reconcile_success }}">{{ overview.last_reconcile_success }}</dd></div>
+    <div><dt data-i18n="overview.last_discovery">Last discovery</dt><dd data-i18n="{{ overview.last_discovery }}">{{ overview.last_discovery }}</dd></div>
+    <div><dt data-i18n="overview.last_compaction">Last compaction</dt><dd data-i18n="{{ overview.last_compaction }}">{{ overview.last_compaction }}</dd></div>
+    <div><dt data-i18n="overview.recall_size">Recall size</dt><dd data-i18n="{{ overview.recall_size }}">{{ overview.recall_size }}</dd></div>
+    <div><dt data-i18n="overview.pending_confirmations">Pending confirmations</dt><dd>{{ overview.pending_confirmation_count }}</dd></div>
+  </dl>
+</section>
+{% endblock %}
