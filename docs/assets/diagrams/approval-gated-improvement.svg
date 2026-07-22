@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="540" viewBox="0 0 1360 540">
+  <rect width="1360" height="540" fill="#f4f0e7"/>
+  <style>.title{font:700 34px system-ui,sans-serif;fill:#17241e}.heading{font:700 23px system-ui,sans-serif;fill:#17241e}.detail{font:400 18px system-ui,sans-serif;fill:#4d5a53}</style>
+  <text x="70" y="92" class="title">Approval-gated improvement</text>
+  <text x="70" y="132" class="detail">Synthetic public illustration — DEMO DATA</text>
+  <rect x="70" y="180" width="330" height="210" rx="0" fill="#fbfaf6" stroke="#1f2a24" stroke-width="3"/>
+  <text x="96" y="246" class="heading">Analyze</text>
+  <text x="96" y="302" class="detail">Create a bounded proposal</text>
+  <path d="M 416 285 H 458" stroke="#155d3b" stroke-width="5"/>
+  <path d="M 448 273 L 462 285 L 448 297" fill="none" stroke="#155d3b" stroke-width="5"/>
+  <rect x="480" y="180" width="330" height="210" rx="0" fill="#fbfaf6" stroke="#1f2a24" stroke-width="3"/>
+  <text x="506" y="246" class="heading">Human approval</text>
+  <text x="506" y="302" class="detail">Draft remains unapplied</text>
+  <path d="M 826 285 H 868" stroke="#155d3b" stroke-width="5"/>
+  <path d="M 858 273 L 872 285 L 858 297" fill="none" stroke="#155d3b" stroke-width="5"/>
+  <rect x="890" y="180" width="330" height="210" rx="0" fill="#fbfaf6" stroke="#1f2a24" stroke-width="3"/>
+  <text x="916" y="246" class="heading">Verify or rollback</text>
+  <text x="916" y="302" class="detail">No silent self-modification</text>
+</svg>

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "_empty_state.html" import empty_state %}
+{% block content %}
+<section class="ledger compact">
+  <h2 data-i18n="projects.persisted_findings">Persisted discovery findings</h2>
+  {% for issue in discovery.issues %}
+  <article class="memory-card">
+    <header><span class="status disabled">{{ issue.code }}</span><span>{{ issue.affected_capability }}</span></header>
+    <details class="path-details">
+      <summary data-i18n="projects.show_affected_path">Show affected path</summary>
+      <p class="path">{{ issue.path }}</p>
+    </details>
+    <p data-i18n="projects.remediation.{{ issue.code }}">{{ issue.remediation }}</p>
+    <p class="muted"><span data-i18n="common.observed">Observed</span> {{ issue.observed_at }}</p>
+  </article>
+  {% else %}{{ empty_state(
+    "No active discovery issues are recorded. This is healthy; no action required.",
+    "projects.no_discovery_issues",
+    "memory-hub doctor --format json",
+    "Doctor reports no unexplained discovery or permission failure.",
+    "projects.no_discovery_issues_success"
+  ) }}{% endfor %}
+</section>
+<section class="ledger compact">
+  <h2 data-i18n="projects.duplicate_groups">Duplicate candidate groups</h2>
+  {% for duplicate in discovery.duplicates %}
+  <article class="memory-card">
+    <header><span class="status">{{ duplicate.fingerprint_kind }}</span><span><span data-i18n="common.observed">Observed</span> {{ duplicate.observed_at }}</span></header>
+    <details class="path-details">
+      <summary data-i18n="projects.show_candidate_paths">Show candidate paths</summary>
+      <ul>{% for path in duplicate.candidate_paths %}<li class="path">{{ path }}</li>{% endfor %}</ul>
+    </details>
+  </article>
+  {% else %}{{ empty_state(
+    "Duplicate candidates: not recorded. This is healthy; no action required.",
+    "projects.duplicates_not_recorded",
+    "memory-hub discover --dry-run --format json",
+    "The preview shows no unexpected duplicate candidate group.",
+    "projects.duplicates_not_recorded_success"
+  ) }}{% endfor %}
+</section>
+<section class="project-browser" data-project-browser data-project-page-size="12" aria-labelledby="project-browser-heading">
+<h2 id="project-browser-heading" data-i18n="projects.registered_projects">Registered projects</h2>
+{% if projects %}
+<div class="project-browser-controls" data-project-controls hidden>
+  <label><span data-i18n="projects.search_label">Search by project name or ID</span>
+    <input type="search" autocomplete="off" data-project-search>
+  </label>
+  <label><span data-i18n="projects.status_filter">Status filter</span>
+    <select data-project-status-filter>
+      <option value="all" data-i18n="projects.status_all">All statuses</option>
+      <option value="enabled" data-i18n="projects.status_enabled">Enabled</option>
+      <option value="disabled" data-i18n="projects.status_disabled">Disabled</option>
+      <option value="permission" data-i18n="projects.status_permission">Permission issue</option>
+      <option value="inactive" data-i18n="projects.status_inactive">Inactive</option>
+    </select>
+  </label>
+  <output class="project-results" data-project-results aria-live="polite">
+    <span data-i18n="projects.showing">Showing</span>
+    <strong data-project-visible-count>{{ projects|length }}</strong>
+    <span data-i18n="projects.of">of</span>
+    <strong data-project-total-count="{{ projects|length }}">{{ projects|length }}</strong>
+    <span data-i18n="projects.result_label">projects</span>
+  </output>
+</div>
+{% endif %}
+<div class="cards" data-project-list>
+{% for project in projects %}
+  <article class="project-card" data-project-card data-project-name="{{ project.display_name }}" data-project-id="{{ project.project_id }}" data-project-status="{{ 'enabled' if project.enabled else 'disabled' }}{% if project.permission_status != 'ok' %} permission{% endif %}{% if project.inactivity_state == 'inactive' %} inactive{% endif %}">
+    <header><div><p class="index">{{ project.project_id }}</p><h2>{{ project.display_name }}</h2></div><span class="status {{ 'enabled' if project.enabled else 'disabled' }}" data-i18n="{{ 'Enabled' if project.enabled else 'Disabled' }}">{{ "Enabled" if project.enabled else "Disabled" }}</span></header>
+    <dl>
+      <div><dt data-i18n="projects.permission">Permission</dt><dd data-i18n="{{ project.permission_status }}">{{ project.permission_status }}</dd></div>
+      <div><dt data-i18n="projects.discovery">Discovery</dt><dd data-i18n="{{ project.discovery_status }}">{{ project.discovery_status }}</dd></div>
+      <div><dt data-i18n="projects.inactivity">Inactivity</dt><dd data-i18n="{{ project.inactivity_state }}">{{ project.inactivity_state }}</dd></div>
+      <div><dt data-i18n="projects.last_change">Last change</dt><dd>{% if project.last_observed_change %}{{ project.last_observed_change }}{% else %}<span data-i18n="not recorded">not recorded</span>{% endif %}</dd></div>
+    </dl>
+    <details class="path-details" data-project-path>
+      <summary data-i18n="projects.show_full_path">Show full path</summary>
+      <p class="path">{{ project.canonical_path }}</p>
+    </details>
+    <div class="actions">
+      <form method="post" action="/projects/{{ project.project_id }}/{{ 'disable' if project.enabled else 'enable' }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" data-i18n="{{ 'Disable' if project.enabled else 'Enable' }}">{{ "Disable" if project.enabled else "Enable" }}</button>
+      </form>
+      <form method="post" action="/projects/{{ project.project_id }}/relink">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label><span data-i18n="projects.verified_new_path">Verified new path</span> <input name="new_path" required></label>
+        <button type="submit" data-i18n="Relink">Relink</button>
+      </form>
+    </div>
+  </article>
+{% else %}
+  {{ empty_state(
+    "No projects are recorded yet.",
+    "projects.none_recorded",
+    "memory-hub discover --dry-run --format json",
+    "The preview lists only the project candidates you expect to review.",
+    "projects.none_recorded_success"
+  ) }}
+{% endfor %}
+</div>
+{% if projects %}
+<p class="project-no-results" data-project-no-results hidden data-i18n="projects.no_filter_results">No projects match the current filters.</p>
+<button type="button" data-project-show-more hidden data-i18n="projects.show_more">Show more</button>
+{% endif %}
+</section>
+<script src="/static/projects.js" defer></script>
+{% endblock %}

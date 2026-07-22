@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "_empty_state.html" import empty_state %}
+{% block content %}
+<p class="lede-copy" data-i18n="proposals.promotion_lede">Review model-private rules before explicitly promoting them to shared project facts.</p>
+<section aria-labelledby="promotion-heading">
+  <p class="eyebrow" data-i18n="proposals.awaiting_approval">Awaiting approval</p>
+  <h2 id="promotion-heading" data-i18n="proposals.memory_promotions">Memory promotions</h2>
+  <div class="cards">
+  {% for promotion in promotions %}
+    <article class="proposal-card">
+      <p class="index">{{ promotion.promotion_id }}</p>
+      <h3>{{ promotion.proposed_rule }}</h3>
+      <dl>
+        <div><dt data-i18n="memories.project">Project</dt><dd>{{ promotion.project_id }}</dd></div>
+        <div><dt data-i18n="common.namespace">Namespace</dt><dd>{{ promotion.source_agent }} / {{ promotion.model_id }}</dd></div>
+        <div><dt data-i18n="proposals.requested">Requested</dt><dd>{{ promotion.requested_at }}</dd></div>
+      </dl>
+      {% if promotion.approvable %}<form method="post" action="/promotions/{{ promotion.promotion_id }}/approve">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="project_id" value="{{ promotion.project_id }}">
+        <input type="hidden" name="source_agent" value="{{ promotion.source_agent }}">
+        <input type="hidden" name="model_id" value="{{ promotion.model_id }}">
+        <input type="hidden" name="confirmation" value="APPROVE">
+        <button type="submit" data-i18n="proposals.approve_shared_rule">Approve shared rule</button>
+      </form>{% else %}<p class="notice" role="status" data-i18n="proposals.unsafe_promotion">Unsafe promotion metadata; approval unavailable.</p>{% endif %}
+    </article>
+  {% else %}
+    {{ empty_state(
+      "No memory promotions are awaiting approval.",
+      "proposals.no_promotions",
+      'memory-hub codex-context --cwd "$PWD" --format json',
+      "The command returns the exact namespace needed before requesting a promotion from Memories.",
+      "proposals.no_promotions_success"
+    ) }}
+  {% endfor %}
+  </div>
+</section>
+<p class="lede-copy" data-i18n="proposals.improvement_lede">Review bounded proposal metadata, then explicitly approve, reject, apply, recover, or roll back an eligible local change.</p>
+<section aria-labelledby="improvement-heading">
+<p class="eyebrow" data-i18n="proposals.local_improvements">Local improvements</p>
+<h2 id="improvement-heading" data-i18n="proposals.improvement_proposals">Improvement proposals</h2>
+<div class="cards">
+{% for proposal in proposals %}
+  <article class="proposal-card">
+    <p class="index">{{ proposal.proposal_id }}</p>
+    <h3>{{ proposal.title }}</h3>
+    <p>{{ proposal.description }}</p>
+    <dl>
+      <div><dt data-i18n="proposals.risk">Risk</dt><dd data-i18n="{{ proposal.risk }}">{{ proposal.risk }}</dd></div>
+      <div><dt data-i18n="common.status">Status</dt><dd data-i18n="{{ proposal.status }}">{{ proposal.status }}</dd></div>
+      <div><dt data-i18n="proposals.origin">Origin</dt><dd data-i18n="{{ proposal.origin }}">{{ proposal.origin }}</dd></div>
+      <div><dt data-i18n="common.created">Created</dt><dd>{{ proposal.created_at }}</dd></div>
+      <div><dt data-i18n="common.updated">Updated</dt><dd>{{ proposal.updated_at }}</dd></div>
+      <div><dt data-i18n="proposals.patch">Patch</dt><dd>{{ proposal.patch_bytes }} <span data-i18n="common.bytes">bytes</span>{% if proposal.patch_sha256 %}; SHA-256 {{ proposal.patch_sha256 }}{% else %}; <span data-i18n="proposals.no_patch">no executable patch</span>{% endif %}</dd></div>
+      <div><dt data-i18n="proposals.verification">Verification</dt><dd>{% for label in proposal.verification_labels %}<span data-i18n="{{ label }}">{{ label }}</span>{% if not loop.last %}, {% endif %}{% else %}<span data-i18n="proposals.no_verification">No configured verification</span>{% endfor %}</dd></div>
+      <div><dt data-i18n="proposals.verification_summary">Verification summary</dt><dd>{{ proposal.verification_summary }}</dd></div>
+    </dl>
+    {% if proposal.can_approve or proposal.can_reject or proposal.can_apply or proposal.can_recover or proposal.can_rollback %}
+    <div class="actions">
+      {% if proposal.can_approve %}<form method="post" action="/proposals/{{ proposal.proposal_id }}/approve">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="confirmation" value="APPROVE">
+        <button type="submit" data-i18n="Approve">Approve</button>
+      </form>{% endif %}
+      {% if proposal.can_reject %}<form method="post" action="/proposals/{{ proposal.proposal_id }}/reject">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="confirmation" value="REJECT">
+        <button type="submit" data-i18n="Reject">Reject</button>
+      </form>{% endif %}
+      {% if proposal.can_apply %}<form method="post" action="/proposals/{{ proposal.proposal_id }}/apply">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="confirmation" value="APPLY">
+        <button type="submit" data-i18n="proposals.apply">Apply in isolated branch</button>
+      </form>{% endif %}
+      {% if proposal.can_recover %}<form method="post" action="/proposals/{{ proposal.proposal_id }}/apply">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="confirmation" value="APPLY">
+        <button type="submit" data-i18n="proposals.recover">Recover interrupted apply</button>
+      </form>{% endif %}
+      {% if proposal.can_rollback %}<form method="post" action="/proposals/{{ proposal.proposal_id }}/rollback">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="confirmation" value="ROLLBACK">
+        <button type="submit" data-i18n="Rollback">Rollback</button>
+      </form>{% endif %}
+    </div>
+    {% elif not proposal.review_complete %}<p class="notice" role="status" data-i18n="proposals.review_unavailable">Review metadata was redacted or truncated; proposal actions are unavailable.</p>
+    {% else %}<p class="notice" role="status" data-i18n="proposals.no_action">No proposal action is available in the current state.</p>{% endif %}
+  </article>
+{% else %}
+  {{ empty_state(
+    "No improvement proposal metadata is recorded.",
+    "proposals.none_recorded",
+    "memory-hub proposal list --format json",
+    "The command reports status ok and the same empty proposal list.",
+    "proposals.none_recorded_success"
+  ) }}
+{% endfor %}
+</div>
+</section>
+{% endblock %}
