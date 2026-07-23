@@ -63,6 +63,9 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "macos_only: requires a macOS-only security primitive and is explicitly skipped elsewhere",
+]
 
 [tool.coverage.run]
 source = ["project_memory_hub"]

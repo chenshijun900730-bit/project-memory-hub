@@ -96,8 +96,15 @@ Record exact commands and outcomes. A check that was not run must be listed as n
 hosted result from a local equivalent command.
 
 The browser installation is explicit because neither local nor hosted checks may rely on a runner's
-preinstalled Chromium cache. The macOS workflow is release-blocking. The Linux workflow and job are
-named experimental, use `continue-on-error`, and remain non-blocking. There is no Windows job.
+preinstalled Chromium cache. The macOS workflow is release-blocking and owns the complete 85%
+branch-coverage gate. Linux uses four independent experimental jobs for portable Python tests,
+JavaScript syntax, Chromium E2E, and public-asset privacy, so one failure cannot suppress the other
+checks.
+Each Linux job uses `continue-on-error` and remains non-blocking. The portable tests use private
+home-directory temporary roots (including an explicit E2E `TMPDIR`) and skip only tests that require
+macOS `sandbox-exec` or
+`fcntl.F_GETPATH`. These skips do not change production runtime logic; the blocking macOS CI still
+owns complete validation of the macOS security boundaries. There is no Windows job.
 
 ## Build and inspect artifacts
 

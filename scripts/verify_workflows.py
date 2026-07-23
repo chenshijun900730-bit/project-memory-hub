@@ -60,7 +60,12 @@ _EXPECTED_JOB_CONTRACTS = {
         "quality": ("macos-14", 45),
         "artifact-smoke": ("macos-14", 30),
     },
-    "linux-experimental.yml": {"linux-experimental": ("ubuntu-24.04", 45)},
+    "linux-experimental.yml": {
+        "linux-python": ("ubuntu-24.04", 45),
+        "linux-javascript": ("ubuntu-24.04", 10),
+        "linux-browser": ("ubuntu-24.04", 30),
+        "linux-privacy": ("ubuntu-24.04", 15),
+    },
     "codeql.yml": {"analyze": ("ubuntu-24.04", 30)},
     "release-draft.yml": {
         "verify": ("macos-14", 60),
@@ -450,7 +455,7 @@ def _verify_runners(document: dict[str, Any], path: Path) -> None:
 def _verify_execution_context(document: dict[str, Any], path: Path) -> None:
     for job_id, raw_job in _jobs(document, path).items():
         job = _mapping(raw_job, code="job_invalid", path=path)
-        if path.name == "linux-experimental.yml" and job_id == "linux-experimental":
+        if path.name == "linux-experimental.yml":
             if job.get("continue-on-error") is not True:
                 _fail("linux_experimental_blocking", path)
         elif "continue-on-error" in job:
@@ -486,7 +491,10 @@ def _verify_setup_python(document: dict[str, Any], path: Path) -> None:
     expected_by_job: dict[str, list[tuple[str | None, str]]] = {
         "quality": [(None, "3.11")],
         "artifact-smoke": [("python-311", "3.11"), ("python-312", "3.12")],
-        "linux-experimental": [(None, "3.11")],
+        "linux-python": [(None, "3.11")],
+        "linux-javascript": [],
+        "linux-browser": [(None, "3.11")],
+        "linux-privacy": [(None, "3.11")],
         "analyze": [],
         "verify": [("python-311", "3.11"), ("python-312", "3.12")],
         "draft": [],
@@ -494,7 +502,10 @@ def _verify_setup_python(document: dict[str, Any], path: Path) -> None:
     expected_setup_uv = {
         "quality": 1,
         "artifact-smoke": 1,
-        "linux-experimental": 1,
+        "linux-python": 1,
+        "linux-javascript": 0,
+        "linux-browser": 1,
+        "linux-privacy": 1,
         "analyze": 0,
         "verify": 1,
         "draft": 0,
@@ -502,7 +513,10 @@ def _verify_setup_python(document: dict[str, Any], path: Path) -> None:
     expected_checkout = {
         "quality": 1,
         "artifact-smoke": 1,
-        "linux-experimental": 1,
+        "linux-python": 1,
+        "linux-javascript": 1,
+        "linux-browser": 1,
+        "linux-privacy": 1,
         "analyze": 1,
         "verify": 1,
         "draft": 0,
@@ -591,21 +605,60 @@ def _verify_linux_experimental(document: dict[str, Any], path: Path) -> None:
         job = _mapping(raw_job, code="job_invalid", path=path)
         if "experimental" not in f"{job_id} {job.get('name', '')}".casefold():
             _fail("linux_experimental_name", path)
-    commands = _job_commands(
-        _mapping(_jobs(document, path)["linux-experimental"], code="job_invalid", path=path),
+    jobs = _jobs(document, path)
+    python_commands = _job_commands(
+        _mapping(jobs["linux-python"], code="job_invalid", path=path),
         path,
     )
     _require_exact_commands(
-        commands,
+        python_commands,
+        (
+            "uv lock --check",
+            "uv sync --locked --extra test",
+            'mkdir -m 700 "$HOME/pmh-linux-pytest-tmp"',
+            "TMPDIR=$HOME/pmh-linux-pytest-tmp uv run pytest --ignore=tests/e2e "
+            "--basetemp=$HOME/pmh-linux-pytest-tmp/pytest -ra -q",
+        ),
+        path,
+    )
+    javascript_commands = _job_commands(
+        _mapping(jobs["linux-javascript"], code="job_invalid", path=path),
+        path,
+    )
+    _require_exact_commands(
+        javascript_commands,
+        (
+            "node --check src/project_memory_hub/web/static/i18n.js",
+            "node --check src/project_memory_hub/web/static/projects.js",
+            "node --check src/project_memory_hub/web/static/sources.js",
+        ),
+        path,
+    )
+    browser_commands = _job_commands(
+        _mapping(jobs["linux-browser"], code="job_invalid", path=path),
+        path,
+    )
+    _require_exact_commands(
+        browser_commands,
         (
             "uv lock --check",
             "uv sync --locked --extra test",
             "uv run playwright install --with-deps chromium",
-            "uv run pytest --cov=project_memory_hub --cov-branch --cov-fail-under=85",
-            "node --check src/project_memory_hub/web/static/i18n.js",
-            "node --check src/project_memory_hub/web/static/projects.js",
-            "node --check src/project_memory_hub/web/static/sources.js",
-            "uv run pytest tests/e2e -q",
+            'mkdir -m 700 "$HOME/pmh-linux-e2e-tmp"',
+            "TMPDIR=$HOME/pmh-linux-e2e-tmp uv run pytest tests/e2e "
+            "--basetemp=$HOME/pmh-linux-e2e-tmp/pytest -ra -q",
+        ),
+        path,
+    )
+    privacy_commands = _job_commands(
+        _mapping(jobs["linux-privacy"], code="job_invalid", path=path),
+        path,
+    )
+    _require_exact_commands(
+        privacy_commands,
+        (
+            "uv lock --check",
+            "uv sync --locked --extra test",
             "uv run python scripts/verify_public_assets.py docs/assets",
         ),
         path,

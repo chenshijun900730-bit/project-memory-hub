@@ -71,6 +71,10 @@ def _repository(tmp_path: Path) -> Path:
 
     _git(root, "rm", "private-history.txt")
     _write(root / "README.md", "public bytes\n")
+    _write(
+        root / ".github" / "workflows" / "linux-experimental.yml",
+        "name: Linux experimental compatibility\n",
+    )
     _write(root / "bin" / "tool", "#!/bin/sh\nexit 0\n", executable=True)
     _write(root / "docs" / "space name.txt", "space-safe\n")
     _write(root / "config" / "public-release-allowlist.toml", "schema_version = 1\n")
@@ -266,6 +270,37 @@ def test_root_commit_is_stable_for_the_same_source(tmp_path: Path) -> None:
     second = subject._create_root_commit(root, tree, source)
 
     assert first == second
+
+
+def test_public_snapshot_preserves_source_linux_workflow_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root, forbidden, receipt_path, receipt = _fixture(tmp_path)
+    workflow_path = Path(".github/workflows/linux-experimental.yml")
+    expected = (root / workflow_path).read_bytes()
+    worktree = tmp_path / "public-worktree"
+
+    result = _invoke(
+        monkeypatch,
+        root,
+        receipt_path,
+        worktree,
+        forbidden,
+    )
+    committed = subprocess.run(
+        ["git", "-C", str(root), "show", f"{BRANCH}:{workflow_path.as_posix()}"],
+        check=True,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=10,
+    ).stdout
+
+    assert result.tree == receipt["tree"]
+    assert _git(root, "rev-parse", f"{BRANCH}^{{tree}}") == receipt["tree"]
+    assert (worktree / workflow_path).read_bytes() == expected
+    assert committed == expected
 
 
 @pytest.mark.parametrize(

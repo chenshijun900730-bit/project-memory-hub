@@ -195,16 +195,73 @@ def test_linux_compatibility_is_explicitly_experimental_and_non_blocking() -> No
     assert "experimental" in workflow["name"].casefold()
     assert workflow["permissions"] == {"contents": "read"}
     jobs = workflow["jobs"]
-    assert type(jobs) is dict and jobs
+    assert type(jobs) is dict
+    assert set(jobs) == {
+        "linux-python",
+        "linux-javascript",
+        "linux-browser",
+        "linux-privacy",
+    }
     for job_id, job in jobs.items():
         assert "experimental" in f"{job_id} {job.get('name', '')}".casefold()
         assert job["runs-on"].startswith("ubuntu-")
         assert job["continue-on-error"] is True
+        assert "needs" not in job
         commands = _run_commands(job)
-        assert "uv sync --locked --extra test" in commands
-        assert "uv run playwright install --with-deps chromium" in commands
-        assert "uv run pytest --cov=project_memory_hub --cov-branch --cov-fail-under=85" in commands
-        assert "uv run pytest tests/e2e -q" in commands
+        if job_id == "linux-javascript":
+            assert "uv sync --locked --extra test" not in commands
+        else:
+            assert "uv sync --locked --extra test" in commands
+
+    python_commands = _run_commands(jobs["linux-python"])
+    assert 'mkdir -m 700 "$HOME/pmh-linux-pytest-tmp"' in python_commands
+    assert (
+        "TMPDIR=$HOME/pmh-linux-pytest-tmp uv run pytest --ignore=tests/e2e "
+        "--basetemp=$HOME/pmh-linux-pytest-tmp/pytest -ra -q" in python_commands
+    )
+    assert "--cov-fail-under" not in python_commands
+
+    javascript_commands = _run_commands(jobs["linux-javascript"])
+    for script in ("i18n.js", "projects.js", "sources.js"):
+        assert f"node --check src/project_memory_hub/web/static/{script}" in javascript_commands
+
+    browser_commands = _run_commands(jobs["linux-browser"])
+    assert "uv run playwright install --with-deps chromium" in browser_commands
+    assert 'mkdir -m 700 "$HOME/pmh-linux-e2e-tmp"' in browser_commands
+    assert (
+        "TMPDIR=$HOME/pmh-linux-e2e-tmp uv run pytest tests/e2e "
+        "--basetemp=$HOME/pmh-linux-e2e-tmp/pytest -ra -q" in browser_commands
+    )
+
+    privacy_commands = _run_commands(jobs["linux-privacy"])
+    assert "uv run python scripts/verify_public_assets.py docs/assets" in privacy_commands
+
+
+@pytest.mark.parametrize("mutation", ("dependency", "missing_job", "full_coverage"))
+def test_linux_checks_remain_independent_and_platform_scoped(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    def mutate(document: dict[str, Any]) -> None:
+        jobs = document["jobs"]
+        if mutation == "dependency":
+            jobs["linux-browser"]["needs"] = "linux-python"
+        elif mutation == "missing_job":
+            del jobs["linux-privacy"]
+        else:
+            step = next(
+                item
+                for item in jobs["linux-python"]["steps"]
+                if "uv run pytest" in str(item.get("run", ""))
+            )
+            step["run"] = "uv run pytest --cov=project_memory_hub --cov-branch --cov-fail-under=85"
+
+    _assert_mutated_rejected(
+        tmp_path,
+        "linux-experimental.yml",
+        mutate,
+        match="job_schema|jobs_invalid|run_command_invalid",
+    )
 
 
 def test_no_workflow_uses_a_windows_runner() -> None:
