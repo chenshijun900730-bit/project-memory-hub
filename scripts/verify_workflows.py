@@ -615,7 +615,9 @@ def _verify_linux_experimental(document: dict[str, Any], path: Path) -> None:
         (
             "uv lock --check",
             "uv sync --locked --extra test",
-            "uv run pytest --ignore=tests/e2e --basetemp=$HOME/pmh-linux-pytest -ra -q",
+            'mkdir -m 700 "$HOME/pmh-linux-pytest-tmp"',
+            "TMPDIR=$HOME/pmh-linux-pytest-tmp uv run pytest --ignore=tests/e2e "
+            "--basetemp=$HOME/pmh-linux-pytest-tmp/pytest -ra -q",
         ),
         path,
     )

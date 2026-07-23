@@ -214,9 +214,10 @@ def test_linux_compatibility_is_explicitly_experimental_and_non_blocking() -> No
             assert "uv sync --locked --extra test" in commands
 
     python_commands = _run_commands(jobs["linux-python"])
+    assert 'mkdir -m 700 "$HOME/pmh-linux-pytest-tmp"' in python_commands
     assert (
-        "uv run pytest --ignore=tests/e2e --basetemp=$HOME/pmh-linux-pytest -ra -q"
-        in python_commands
+        "TMPDIR=$HOME/pmh-linux-pytest-tmp uv run pytest --ignore=tests/e2e "
+        "--basetemp=$HOME/pmh-linux-pytest-tmp/pytest -ra -q" in python_commands
     )
     assert "--cov-fail-under" not in python_commands
 

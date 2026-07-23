@@ -31,8 +31,10 @@ jobs:
         run: |
           uv lock --check
           uv sync --locked --extra test
+      - name: Prepare a trusted Python temporary root
+        run: mkdir -m 700 "$HOME/pmh-linux-pytest-tmp"
       - name: Run Linux-compatible Python tests
-        run: uv run pytest --ignore=tests/e2e --basetemp=$HOME/pmh-linux-pytest -ra -q
+        run: TMPDIR=$HOME/pmh-linux-pytest-tmp uv run pytest --ignore=tests/e2e --basetemp=$HOME/pmh-linux-pytest-tmp/pytest -ra -q
 
   linux-javascript:
     name: Linux JavaScript syntax (experimental)
