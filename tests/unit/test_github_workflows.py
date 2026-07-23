@@ -226,7 +226,11 @@ def test_linux_compatibility_is_explicitly_experimental_and_non_blocking() -> No
 
     browser_commands = _run_commands(jobs["linux-browser"])
     assert "uv run playwright install --with-deps chromium" in browser_commands
-    assert "uv run pytest tests/e2e --basetemp=$HOME/pmh-linux-e2e -ra -q" in browser_commands
+    assert 'mkdir -m 700 "$HOME/pmh-linux-e2e-tmp"' in browser_commands
+    assert (
+        "TMPDIR=$HOME/pmh-linux-e2e-tmp uv run pytest tests/e2e "
+        "--basetemp=$HOME/pmh-linux-e2e-tmp/pytest -ra -q" in browser_commands
+    )
 
     privacy_commands = _run_commands(jobs["linux-privacy"])
     assert "uv run python scripts/verify_public_assets.py docs/assets" in privacy_commands

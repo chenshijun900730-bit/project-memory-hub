@@ -642,7 +642,9 @@ def _verify_linux_experimental(document: dict[str, Any], path: Path) -> None:
             "uv lock --check",
             "uv sync --locked --extra test",
             "uv run playwright install --with-deps chromium",
-            "uv run pytest tests/e2e --basetemp=$HOME/pmh-linux-e2e -ra -q",
+            'mkdir -m 700 "$HOME/pmh-linux-e2e-tmp"',
+            "TMPDIR=$HOME/pmh-linux-e2e-tmp uv run pytest tests/e2e "
+            "--basetemp=$HOME/pmh-linux-e2e-tmp/pytest -ra -q",
         ),
         path,
     )

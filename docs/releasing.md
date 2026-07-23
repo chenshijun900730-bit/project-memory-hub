@@ -100,8 +100,9 @@ preinstalled Chromium cache. The macOS workflow is release-blocking and owns the
 branch-coverage gate. Linux uses four independent experimental jobs for portable Python tests,
 JavaScript syntax, Chromium E2E, and public-asset privacy, so one failure cannot suppress the other
 checks.
-Each Linux job uses `continue-on-error` and remains non-blocking. The portable tests use a private
-home-directory base temp and explicitly skip only tests that require macOS `sandbox-exec` or
+Each Linux job uses `continue-on-error` and remains non-blocking. The portable tests use private
+home-directory temporary roots (including an explicit E2E `TMPDIR`) and skip only tests that require
+macOS `sandbox-exec` or
 `fcntl.F_GETPATH`. These skips do not change production runtime logic; the blocking macOS CI still
 owns complete validation of the macOS security boundaries. There is no Windows job.
 

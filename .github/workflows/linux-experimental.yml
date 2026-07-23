@@ -75,8 +75,10 @@ jobs:
           uv sync --locked --extra test
       - name: Install Chromium and Linux system dependencies
         run: uv run playwright install --with-deps chromium
+      - name: Prepare a trusted E2E temporary root
+        run: mkdir -m 700 "$HOME/pmh-linux-e2e-tmp"
       - name: Run Linux-compatible Chromium end-to-end tests
-        run: uv run pytest tests/e2e --basetemp=$HOME/pmh-linux-e2e -ra -q
+        run: TMPDIR=$HOME/pmh-linux-e2e-tmp uv run pytest tests/e2e --basetemp=$HOME/pmh-linux-e2e-tmp/pytest -ra -q
 
   linux-privacy:
     name: Linux public-asset privacy (experimental)
