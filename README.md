@@ -10,7 +10,13 @@ Project Memory Hub turns observable development outcomes into a compact brief fo
 runs on your Mac, keeps behavior memory separated by project, source, and exact model, and never
 pretends to recover a model's hidden chain of thought.
 
-![Synthetic Project Memory Hub Overview with a visible DEMO DATA label](docs/assets/screenshots/overview.png)
+[![Watch the Project Memory Hub English overview](docs/assets/screenshots/overview.png)][english-overview]
+
+▶ **[Watch the 98-second English overview with narration and captions][english-overview]**
+
+_The linked presentation is a media-only overview, not a software release._
+
+[english-overview]: https://raw.githubusercontent.com/chenshijun900730-bit/project-memory-hub/media-overview-en-v1/project-memory-hub-overview-en.mp4
 
 ## Why Project Memory Hub
 
