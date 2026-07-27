@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="lede-copy" data-i18n="sources.lede">Only registered adapters can be enabled. Optional tools remain sealed until their implementation and isolation tests exist.</p>
+{% if restart_required %}<p class="notice" role="status" data-i18n="sources.restart_notice">Saved desired source state. Restart required before the running process changes; desired and runtime states are shown separately.</p>{% endif %}
+<section class="ledger" data-source-collection="ingestion">
+  <h2 data-i18n="sources.ingestion_sources">Ingestion sources</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="sources.source">Source</th>
+          <th data-i18n="sources.implementation">Implementation</th>
+          <th><span data-i18n="sources.desired_state">Desired state</span> / <span data-i18n="sources.running_process">Running process</span></th>
+          <th data-i18n="sources.action">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for source in source_groups.ingestion %}
+        <tr data-source="{{ source.source_agent.value }}">
+          <th scope="row">{{ source.label }}</th>
+          <td><span class="mobile-field-label" data-i18n="sources.implementation">Implementation</span><span data-i18n="sources.available">Available</span></td>
+          <td>
+            <span class="mobile-field-label"><span data-i18n="sources.desired_state">Desired state</span> / <span data-i18n="sources.running_process">Running process</span></span>
+            <span class="status {{ source.status|lower }}" data-i18n="Desired: {{ source.status }}">Desired: {{ source.status }}</span>
+            <span class="status {{ source.runtime_status|lower }}" data-i18n="Runtime: {{ source.runtime_status }}">Runtime: {{ source.runtime_status }}</span>
+          </td>
+          <td>
+            <span class="mobile-field-label" data-i18n="sources.action">Action</span>
+            <form method="post" action="/sources/{{ source.source_agent.value }}/{{ 'disable' if source.enabled else 'enable' }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" data-i18n="{{ 'Disable' if source.enabled else 'Enable' }}">{{ "Disable" if source.enabled else "Enable" }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="ledger" data-source-collection="probes">
+  <h2 data-i18n="sources.read_only_probes">Read-only probes</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="sources.source">Source</th>
+          <th data-i18n="sources.implementation">Implementation</th>
+          <th><span data-i18n="sources.desired_state">Desired state</span> / <span data-i18n="sources.running_process">Running process</span></th>
+          <th><span data-i18n="sources.detected">Detected</span> / <span data-i18n="sources.probe_health">Probe health</span> / <span data-i18n="sources.model_identity">Model identity</span></th>
+          <th><span data-i18n="sources.capability">Capability</span> / <span data-i18n="sources.structure">Structure</span></th>
+          <th data-i18n="sources.behavior_import">Behavior import</th>
+          <th data-i18n="sources.action">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for source in source_groups.probes %}
+        <tr data-source="{{ source.source_agent.value }}">
+          <th scope="row">{{ source.label }}</th>
+          <td><span class="mobile-field-label" data-i18n="sources.implementation">Implementation</span><span data-i18n="sources.unavailable">Unavailable</span></td>
+          <td>
+            <span class="mobile-field-label"><span data-i18n="sources.desired_state">Desired state</span> / <span data-i18n="sources.running_process">Running process</span></span>
+            <span class="status {{ source.status|lower }}" data-i18n="Desired: {{ source.status }}">Desired: {{ source.status }}</span>
+            <span class="status {{ source.runtime_status|lower }}" data-i18n="Runtime: {{ source.runtime_status }}">Runtime: {{ source.runtime_status }}</span>
+          </td>
+          <td>
+            <span class="mobile-field-label"><span data-i18n="sources.detected">Detected</span> / <span data-i18n="sources.probe_health">Probe health</span> / <span data-i18n="sources.model_identity">Model identity</span></span>
+            <span class="status {{ source.probe.detected_class }}" data-i18n="{{ source.probe.detected_label }}">{{ source.probe.detected_label }}</span>
+            <span class="status {{ source.probe.health_class }}" data-i18n="{{ source.probe.health_label }}">{{ source.probe.health_label }}</span>
+            <span class="status {{ source.probe.model_class }}" data-i18n="{{ source.probe.model_label }}">{{ source.probe.model_label }}</span>
+            {% if source.probe.warning_codes %}
+            <details class="probe-warnings">
+              <summary data-i18n="sources.warnings">Warnings</summary>
+              <ul class="warning-codes" aria-label="Probe warnings" data-i18n-aria-label="sources.probe_warnings">
+                {% for warning in source.probe.warning_codes %}<li><code>{{ warning }}</code></li>{% endfor %}
+              </ul>
+            </details>
+            {% endif %}
+          </td>
+          <td>
+            <span class="mobile-field-label"><span data-i18n="sources.capability">Capability</span> / <span data-i18n="sources.structure">Structure</span></span>
+            <span data-i18n="{{ source.probe.capability_label }}">{{ source.probe.capability_label }}</span>
+            <span data-i18n="{{ source.probe.structure_label }}">{{ source.probe.structure_label }}</span>
+          </td>
+          <td><span class="mobile-field-label" data-i18n="sources.behavior_import">Behavior import</span><span class="status {{ source.probe.behavior_class }}" data-i18n="sources.locked">Locked</span></td>
+          <td>
+            <span class="mobile-field-label" data-i18n="sources.action">Action</span>
+            {% if source.source_agent.value == "trae" %}
+            <form method="post" action="/sources/trae/probe">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" data-action="structure-probe" data-i18n="sources.further_check"{% if not source.probe.can_run_structure %} disabled aria-disabled="true" title="{{ source.probe.health_label }}" data-i18n-title="{{ source.probe.health_label }}"{% endif %}>Further check</button>
+            </form>
+            {% else %}
+            <span class="muted" data-i18n="sources.no_control_available">No control available</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% if probe_request_complete %}<script src="/static/sources.js" defer></script>{% endif %}
+{% endblock %}

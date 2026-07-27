@@ -1,0 +1,92 @@
+name: Bug report
+description: Report a bug; do not disclose security vulnerabilities or private data.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Do not use this public form for security vulnerabilities.
+        Remove absolute paths, access tokens, session transcripts, database contents, private
+        screenshots, and model credentials. Replace private values with synthetic examples.
+
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Privacy confirmation
+      description: Confirm that this public report contains no private local material.
+      options:
+        - label: I removed absolute paths, access tokens, session transcripts, database contents, private screenshots, and model credentials.
+          required: true
+
+  - type: checkboxes
+    id: conduct_confirmation
+    attributes:
+      label: Conduct confirmation
+      options:
+        - label: I agree to follow the repository Code of Conduct.
+          required: true
+
+  - type: textarea
+    id: defect
+    attributes:
+      label: What happened?
+      description: Describe the observable defect without private data.
+      placeholder: A concise description using synthetic names and values.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: List the smallest synthetic steps that reproduce the behavior.
+      placeholder: |
+        1. Run a sanitized command
+        2. Observe the documented result
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What result did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed_behavior
+    attributes:
+      label: Observed behavior
+      description: Provide a sanitized text summary, not a transcript, database dump, or image.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Project Memory Hub version
+      description: Use the package version or a public commit identifier, never a private checkout path.
+      placeholder: 0.2.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS (supported)
+        - Linux (experimental)
+        - Windows (unsupported)
+        - Other or unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Checks actually run
+      description: List only commands you actually ran and their sanitized outcomes; write "Not run" when applicable.
+    validations:
+      required: true

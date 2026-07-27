@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="setup-shell" data-setup data-setup-next-step="{{ setup.next_step }}">
+{% if saved %}<p class="notice" role="status" data-i18n="setup.saved">Configuration saved safely.</p>{% endif %}
+<section class="lede setup-intro">
+  <p class="kicker" data-i18n="setup.lede">Configure the local memory boundary without editing TOML.</p>
+  <p data-i18n="setup.isolation">Codex and ChatGPT are registered sources. Behavior memory remains isolated by project, source, and exact model ID.</p>
+</section>
+<section class="ledger compact" data-setup-progress aria-labelledby="setup-status-heading">
+  <h2 id="setup-status-heading" data-i18n="setup.status_heading">Current readiness</h2>
+  <dl>
+    <div><dt data-i18n="setup.roots_ready">Project roots ready</dt><dd>{{ setup.valid_root_count }}/{{ setup.project_roots|length }}</dd></div>
+    <div><dt data-i18n="setup.projects_found">Projects found</dt><dd>{{ setup.project_count }}</dd></div>
+    <div><dt data-i18n="setup.first_memory">Shared facts</dt><dd>{{ setup.fact_count }}</dd></div>
+    <div><dt data-i18n="setup.automation">Daily automation</dt><dd><span class="status {{ setup.automation_status }}" data-i18n="setup.automation.{{ setup.automation_status }}">{{ setup.automation_status }}</span></dd></div>
+  </dl>
+  <p class="muted" data-i18n="setup.automation_note">This page saves the desired time and checks status only. Create or update the task through the authorized Codex host.</p>
+</section>
+<section class="next-safe-step setup-next-step" aria-labelledby="setup-next-step-heading">
+  <p class="eyebrow" data-i18n="overview.next_safe_step_eyebrow">Guided first run</p>
+  <h2 id="setup-next-step-heading" data-i18n="setup.next_step_heading">Next safe step</h2>
+  <p data-i18n="setup.next_step.{{ setup.next_step }}">Continue with the next safe local step.</p>
+  {% if setup.next_step == 'discover' %}<div class="command-block"><code>memory-hub discover --dry-run --format json</code></div>{% endif %}
+  {% if setup.next_step == 'first_memory' %}<div class="command-block"><code>memory-hub scan --cwd "$PWD" --dry-run --format json</code></div>{% endif %}
+</section>
+<form class="settings-form setup-form" data-setup-configure method="post" action="/setup/configure">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="expected_revision" value="{{ setup.revision }}">
+  <fieldset>
+    <legend data-i18n="settings.project_roots">Project roots</legend>
+    <label><span data-i18n="settings.one_directory">One absolute existing directory per line</span>
+      <textarea name="project_roots" rows="5" maxlength="131072" required>{% for root in setup.project_roots %}{{ root }}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+    </label>
+    <p class="muted" data-i18n="settings.roots_note">Add a line to include a root; remove its line to stop scanning it after restart. Maximum 32 roots.</p>
+  </fieldset>
+  <fieldset>
+    <legend data-i18n="settings.registered_sources">Registered sources</legend>
+    <label class="check"><input type="checkbox" name="enabled_sources" value="codex" {% if 'codex' in setup.enabled_sources %}checked{% endif %}> Codex</label>
+    <label class="check"><input type="checkbox" name="enabled_sources" value="chatgpt" {% if 'chatgpt' in setup.enabled_sources %}checked{% endif %}> ChatGPT</label>
+    <p class="muted" data-i18n="setup.optional_sources_note">Other detected coding tools remain read-only probes and cannot be enabled here.</p>
+  </fieldset>
+  <div class="field-grid">
+    <label><span data-i18n="settings.recall_budget">Recall token budget</span> <input type="number" name="max_recall_tokens" min="128" max="800" value="{{ setup.max_recall_tokens }}" required></label>
+    <label><span data-i18n="settings.inactive_days">Inactive days</span> <input type="number" name="inactive_days" min="1" max="3650" value="{{ setup.inactive_days }}" required></label>
+    <label><span data-i18n="settings.daily_time">Desired daily time</span> <input type="time" name="daily_reconcile_time" value="{{ setup.daily_reconcile_time }}" required></label>
+  </div>
+  <div class="setup-actions">
+    <button type="submit" data-i18n="setup.save">Save and continue</button>
+    <span data-setup-complete>
+      <button type="submit" formaction="/setup/complete" data-i18n="setup.complete">Finish local setup</button>
+    </span>
+  </div>
+</form>
+</div>
+{% endblock %}

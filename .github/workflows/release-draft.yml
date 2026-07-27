@@ -1,0 +1,120 @@
+name: Verified draft release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify the tagged release candidate
+    permissions:
+      contents: read
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - name: Check out the tagged candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Select clean smoke Python 3.11
+        id: python-311
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+      - name: Select clean smoke Python 3.12
+        id: python-312
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Synchronize the locked test environment
+        run: |
+          uv lock --check
+          uv sync --locked --extra test
+      - name: Verify tag, project version, and workflow policy
+        run: >-
+          uv run python scripts/verify_workflows.py .github/workflows
+          --secret-scanning .github/secret_scanning.yml
+          --tag "$GITHUB_REF_NAME"
+          --project-file pyproject.toml
+      - name: Install the explicit Chromium runtime
+        run: uv run playwright install chromium
+      - name: Run formatting, lint, and strict type checks
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy src/project_memory_hub
+      - name: Run branch coverage and browser checks
+        run: |
+          uv run pytest --cov=project_memory_hub --cov-branch --cov-fail-under=85
+          node --check src/project_memory_hub/web/static/i18n.js
+          node --check src/project_memory_hub/web/static/projects.js
+          node --check src/project_memory_hub/web/static/sources.js
+          uv run pytest tests/e2e -q
+      - name: Verify synthetic demo privacy and public links
+        run: |
+          uv run python scripts/verify_public_assets.py docs/assets
+          uv run python scripts/verify_document_links.py
+      - name: Bind the build to the clean tagged checkout
+        run: |
+          git diff --quiet --exit-code HEAD --
+          uv run python scripts/verify_release_checkout.py --expected-head "$GITHUB_SHA"
+      - name: Build and verify the release artifact pair
+        run: |
+          test ! -e release-dist
+          uv build --wheel --sdist --out-dir release-dist
+          uv run twine check release-dist/*
+          python_311="$(uv python find --system 3.11)"
+          python_312="$(uv python find --system 3.12)"
+          uv run python scripts/verify_release_artifacts.py \
+            --dist release-dist \
+            --smoke-python "$python_311" \
+            --smoke-python "$python_312"
+      - name: Create and verify deterministic checksums
+        run: |
+          uv run python scripts/create_checksums.py release-dist
+          cd release-dist
+          shasum -a 256 -c SHA256SUMS
+      - name: Preserve the verified release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-dist
+          path: |
+            release-dist/project_memory_hub-0.2.1-py3-none-any.whl
+            release-dist/project_memory_hub-0.2.1.tar.gz
+            release-dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 1
+
+  draft:
+    name: Create the unpublished draft after verification
+    needs: verify
+    permissions:
+      contents: write
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - name: Restore the verified release artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-dist
+          path: release-dist
+      - name: Create the unpublished GitHub Release draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh release create --draft --verify-tag "$GITHUB_REF_NAME"
+          release-dist/project_memory_hub-0.2.1-py3-none-any.whl
+          release-dist/project_memory_hub-0.2.1.tar.gz
+          release-dist/SHA256SUMS
+          --title "Project Memory Hub $GITHUB_REF_NAME"
+          --notes "Verified Public Beta draft. Maintainer review is still required before publication."
