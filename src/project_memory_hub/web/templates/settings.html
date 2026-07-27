@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+{% if restart_required %}<p class="notice" role="status" data-i18n="settings.saved_restart">Saved safely. Restart required before these settings affect this running process.</p>{% endif %}
+<section class="ledger compact" aria-labelledby="automation-heading">
+  <h2 id="automation-heading" data-i18n="settings.desired_automation">Desired automation</h2>
+  <dl><div><dt data-i18n="common.status">Status</dt><dd><span class="status {{ automation_status }}" data-i18n="{{ automation_status }}">{{ automation_status }}</span></dd></div></dl>
+  <p class="muted" data-i18n="settings.automation_note">Automation changes require the authorized Codex host interface. The web process never edits Codex automation TOML.</p>
+</section>
+<form class="settings-form" method="post" action="/settings">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <fieldset>
+    <legend data-i18n="settings.project_roots">Project roots</legend>
+    <label><span data-i18n="settings.one_directory">One absolute existing directory per line</span>
+      <textarea name="project_roots" rows="5" maxlength="131072" required>{% for root in config.project_roots %}{{ root }}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+    </label>
+    <p class="muted" data-i18n="settings.roots_note">Add a line to include a root; remove its line to stop scanning it after restart. Maximum 32 roots.</p>
+  </fieldset>
+  <fieldset>
+    <legend data-i18n="settings.registered_sources">Registered sources</legend>
+    <label class="check"><input type="checkbox" name="enabled_sources" value="codex" {% if 'codex' in config.enabled_sources %}checked{% endif %}> Codex</label>
+    <label class="check"><input type="checkbox" name="enabled_sources" value="chatgpt" {% if 'chatgpt' in config.enabled_sources %}checked{% endif %}> ChatGPT</label>
+  </fieldset>
+  <div class="field-grid">
+    <label><span data-i18n="settings.recall_budget">Recall token budget</span> <input type="number" name="max_recall_tokens" min="128" max="800" value="{{ config.max_recall_tokens }}" required></label>
+    <label><span data-i18n="settings.inactive_days">Inactive days</span> <input type="number" name="inactive_days" min="1" max="3650" value="{{ config.inactive_days }}" required></label>
+    <label><span data-i18n="settings.daily_time">Desired daily time</span> <input type="time" name="daily_reconcile_time" value="{{ config.daily_reconcile_time }}" required></label>
+  </div>
+  <button type="submit" data-i18n="settings.save">Save private config</button>
+</form>
+<p class="setup-reopen"><a class="button-link" href="/setup" data-i18n="setup.reopen">Review guided setup</a></p>
+{% endblock %}

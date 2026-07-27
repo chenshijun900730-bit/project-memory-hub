@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_scope": {
+      "enum": [
+        "single-pair-pilot",
+        "full-pilot",
+        "public-v1"
+      ]
+    },
+    "benchmark_id": {
+      "const": "project-memory-effect-public-v1"
+    },
+    "codex_cli_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "condition": {
+      "enum": [
+        "baseline",
+        "pmh"
+      ]
+    },
+    "contamination": {
+      "additionalProperties": false,
+      "properties": {
+        "model_canary_hits": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "project_canary_hits": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "source_canary_hits": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "project_canary_hits",
+        "source_canary_hits",
+        "model_canary_hits"
+      ],
+      "type": "object"
+    },
+    "duration_ms": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "fixture_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "harness_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "harness_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "invalid_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "memory_snapshot_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "model_sandbox_profile_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "observed_model_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "order": {
+      "enum": [
+        "AB",
+        "BA"
+      ]
+    },
+    "prompt_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "raw_evidence_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "reasoning_effort": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_evidence_class": {
+      "const": "self-reported"
+    },
+    "recall": {
+      "additionalProperties": false,
+      "properties": {
+        "brief_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimated_tokens": {
+          "maximum": 800,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "invoked": {
+          "type": "boolean"
+        },
+        "omitted_count": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "selected_count": {
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "not_invoked",
+            "ok",
+            "invalid"
+          ]
+        }
+      },
+      "required": [
+        "invoked",
+        "status",
+        "estimated_tokens",
+        "selected_count",
+        "omitted_count",
+        "brief_sha256"
+      ],
+      "type": "object"
+    },
+    "replicate": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "requested_model_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "run_id": {
+      "pattern": "^run-[a-z0-9-]+$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 3
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "task_id": {
+      "pattern": "^T[0-9]{2}$",
+      "type": "string"
+    },
+    "task_version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "tests_passed": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "tests_total": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "timed_out": {
+      "type": "boolean"
+    },
+    "timeout_seconds": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "tokens": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_write_input_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "cached_input_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "mode": {
+          "const": "fresh_session_final_total"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "reasoning_output_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "total_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "uncached_input_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "mode",
+        "input_tokens",
+        "cached_input_tokens",
+        "cache_write_input_tokens",
+        "uncached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens"
+      ],
+      "type": "object"
+    },
+    "tool_call_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "validator_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "validation_workspace_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "validator_evidence_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "workspace_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "write_guard": {
+      "additionalProperties": false,
+      "properties": {
+        "memory_snapshot_unchanged": {
+          "type": "boolean"
+        },
+        "pending_count_after": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pending_count_before": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trusted_count_after": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "trusted_count_before": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "memory_snapshot_unchanged",
+        "pending_count_before",
+        "pending_count_after",
+        "trusted_count_before",
+        "trusted_count_after"
+      ],
+      "type": "object"
+    },
+    "wrong_route_count": {
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "benchmark_id",
+    "artifact_scope",
+    "runtime_evidence_class",
+    "manifest_sha256",
+    "harness_commit",
+    "harness_sha256",
+    "model_sandbox_profile_sha256",
+    "run_id",
+    "task_id",
+    "task_version",
+    "condition",
+    "replicate",
+    "order",
+    "fixture_commit",
+    "workspace_sha256",
+    "memory_snapshot_sha256",
+    "prompt_sha256",
+    "validator_sha256",
+    "validation_workspace_sha256",
+    "validator_evidence_sha256",
+    "codex_cli_version",
+    "requested_model_id",
+    "observed_model_id",
+    "reasoning_effort",
+    "success",
+    "timed_out",
+    "timeout_seconds",
+    "invalid_reason",
+    "tests_passed",
+    "tests_total",
+    "duration_ms",
+    "tool_call_count",
+    "wrong_route_count",
+    "recall",
+    "tokens",
+    "contamination",
+    "write_guard",
+    "raw_evidence_sha256"
+  ],
+  "title": "Project Memory Hub public benchmark run",
+  "type": "object"
+}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% from "_empty_state.html" import empty_state %}
+{% block content %}
+<section class="guidance-panel" aria-labelledby="exact-model-guidance-heading">
+  <p class="eyebrow" data-i18n="memories.exact_model_guidance_eyebrow">Exact namespace</p>
+  <h2 id="exact-model-guidance-heading" data-i18n="memories.exact_model_guidance_title">Resolve the current Codex model ID</h2>
+  <p data-i18n="memories.exact_model_guidance">Run this command in the current project. Copy only the exact source_agent and model_id returned for this task; this page never guesses or lists other model namespaces.</p>
+  <div class="command-block"><code>memory-hub codex-context --cwd "$PWD" --format json</code></div>
+</section>
+<form class="filter-panel" method="get" action="/memories">
+  <label><span data-i18n="memories.project">Project</span>
+    <select name="project_id" required>
+      <option value="" data-i18n="memories.choose_project">Choose a project</option>
+      {% for project in projects %}<option value="{{ project.project_id }}" {% if selected_project_id == project.project_id %}selected{% endif %}>{{ project.display_name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label><span data-i18n="memories.behavior_source">Source for behavior memory</span>
+    <select name="source_agent">
+      <option value="codex" {% if selected_source and selected_source.value == 'codex' %}selected{% endif %}>Codex</option>
+      <option value="chatgpt" {% if selected_source and selected_source.value == 'chatgpt' %}selected{% endif %}>ChatGPT</option>
+    </select>
+  </label>
+  <label><span data-i18n="memories.exact_model">Exact model ID for behavior memory</span> <input name="model_id" value="{{ selected_model }}"></label>
+  <button type="submit" data-i18n="memories.load">Load project memory</button>
+</form>
+{% if selected_project_id %}
+<section class="memory-list" aria-labelledby="shared-facts-heading">
+  <h2 id="shared-facts-heading" data-i18n="memories.shared_facts">Shared project facts</h2>
+  {% for fact in facts %}
+  <article class="memory-card">
+    <header><span class="status">{{ fact.category }}</span><span>{{ fact.evidence_type }}</span></header>
+    <p>{{ fact.content }}</p>
+    <dl>
+      <div><dt data-i18n="common.source">Source</dt><dd>{{ fact.evidence_reference }}</dd></div>
+      <div><dt data-i18n="common.confidence">Confidence</dt><dd>{{ "%.2f"|format(fact.confidence) }}</dd></div>
+      <div><dt data-i18n="common.observed">Observed</dt><dd>{{ fact.observed_at }}</dd></div>
+    </dl>
+  </article>
+  {% else %}{{ empty_state(
+    "No active shared facts are recorded for this project. Run the next step from that registered project directory.",
+    "memories.no_shared_facts",
+    'memory-hub scan --cwd "$PWD" --dry-run --format json',
+    "The dry run reports reviewable facts without changing the store.",
+    "memories.no_shared_facts_success"
+  ) }}{% endfor %}
+</section>
+{% endif %}
+{% if not filter_complete %}
+{% if selected_project_id %}
+{{ empty_state(
+  "Choose an exact source and model before behavior rows are queried.",
+  "memories.choose_exact_source_model",
+  'memory-hub codex-context --cwd "$PWD" --format json',
+  "The result identifies one exact source_agent and model_id for this task.",
+  "memories.choose_exact_source_model_success"
+) }}
+{% elif projects %}
+{{ empty_state(
+  "Choose a project, source, and model before behavior rows are queried. A project is already registered; resolve this task's exact namespace below.",
+  "memories.choose_registered_project_source_model",
+  'memory-hub codex-context --cwd "$PWD" --format json',
+  "The result identifies one exact source_agent and model_id for this task.",
+  "memories.choose_registered_project_source_model_success"
+) }}
+{% else %}
+{{ empty_state(
+  "Choose a project, source, and model before behavior rows are queried.",
+  "memories.choose_project_source_model",
+  "memory-hub discover --dry-run --format json",
+  "The preview lists only the project candidates you expect to review.",
+  "memories.choose_project_source_model_success"
+) }}
+{% endif %}
+{% else %}
+<section class="memory-list">
+{% for memory in records %}
+  <article class="memory-card">
+    <header><span class="status" data-i18n="{{ memory.memory_kind }}">{{ memory.memory_kind }}</span><span data-i18n="{{ memory.lifecycle_label }}">{{ memory.lifecycle_label }}</span></header>
+    <p>{{ memory.normalized_content }}</p>
+    <dl><div><dt data-i18n="common.namespace">Namespace</dt><dd>{{ memory.source_agent }} / {{ memory.model_id }}</dd></div><div><dt data-i18n="common.confidence">Confidence</dt><dd>{{ "%.2f"|format(memory.confidence) }}</dd></div><div><dt data-i18n="common.created">Created</dt><dd>{{ memory.created_at }}</dd></div></dl>
+    {% if memory.actions_allowed %}
+    <div class="actions">
+      <form method="post" action="/memories/{{ memory.memory_id }}/archive">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="project_id" value="{{ memory.project_id }}">
+        <input type="hidden" name="source_agent" value="{{ memory.source_agent }}">
+        <input type="hidden" name="model_id" value="{{ memory.model_id }}">
+        <input type="hidden" name="confirmation" value="ARCHIVE">
+        <button type="submit" data-i18n="Archive">Archive</button>
+      </form>
+      <form method="post" action="/memories/{{ memory.memory_id }}/delete">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="project_id" value="{{ memory.project_id }}">
+        <input type="hidden" name="source_agent" value="{{ memory.source_agent }}">
+        <input type="hidden" name="model_id" value="{{ memory.model_id }}">
+        <label><span data-i18n="memories.type_delete">Type DELETE</span> <input name="confirmation" pattern="DELETE" required></label>
+        <button class="danger" type="submit" data-i18n="Delete">Delete</button>
+      </form>
+      <form method="post" action="/memories/{{ memory.memory_id }}/promote">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="project_id" value="{{ memory.project_id }}">
+        <input type="hidden" name="source_agent" value="{{ memory.source_agent }}">
+        <input type="hidden" name="model_id" value="{{ memory.model_id }}">
+        <label><span data-i18n="memories.proposed_rule">Proposed shared rule</span> <input name="proposed_rule" required></label>
+        <button type="submit" data-i18n="memories.request_approval">Request approval</button>
+      </form>
+    </div>
+    {% else %}<p class="notice" role="status" data-i18n="memories.unsafe_actions">Unsafe namespace metadata; memory actions unavailable.</p>{% endif %}
+  </article>
+{% else %}
+  {{ empty_state(
+    "No non-deleted memories are recorded in this exact namespace.",
+    "memories.none_recorded",
+    "memory-hub reconcile --if-due --format json",
+    "Reconcile reports success or skipped; this namespace remains isolated if it is still empty.",
+    "memories.none_recorded_success"
+  ) }}
+{% endfor %}
+</section>
+{% endif %}
+{% endblock %}

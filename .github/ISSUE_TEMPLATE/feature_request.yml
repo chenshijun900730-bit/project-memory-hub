@@ -1,0 +1,83 @@
+name: Feature request
+description: Request a feature; do not disclose security vulnerabilities or private data.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for product improvements, not security vulnerabilities. Do not include
+        absolute paths, access tokens, session transcripts, database contents, private screenshots,
+        or model credentials. Explain the need with synthetic examples.
+
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Privacy confirmation
+      description: Confirm that this public request contains no private local material.
+      options:
+        - label: I removed absolute paths, access tokens, session transcripts, database contents, private screenshots, and model credentials.
+          required: true
+
+  - type: checkboxes
+    id: conduct_confirmation
+    attributes:
+      label: Conduct confirmation
+      options:
+        - label: I agree to follow the repository Code of Conduct.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: Describe the user need, current limitation, and who benefits.
+      placeholder: A concrete problem expressed with synthetic project details.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_outcome
+    attributes:
+      label: Proposed outcome
+      description: Describe the desired behavior without prescribing unnecessary implementation details.
+    validations:
+      required: true
+
+  - type: textarea
+    id: isolation_impact
+    attributes:
+      label: Privacy and isolation impact
+      description: Explain how the proposal preserves local-first storage and project/source/model isolation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: List workarounds or smaller approaches you considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      description: What observable, testable result would show that the feature works?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: compatibility
+    attributes:
+      label: Compatibility area
+      options:
+        - Core memory and isolation
+        - Codex ingestion
+        - ChatGPT manual import
+        - Optional-source read-only probe
+        - CLI or local Web console
+        - Packaging, documentation, or release tooling
+        - Other
+    validations:
+      required: true
