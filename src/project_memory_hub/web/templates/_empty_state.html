@@ -1,0 +1,10 @@
+{% macro empty_state(reason, reason_key, command, success_condition, success_key) -%}
+<section class="empty empty-state" data-empty-state="structured">
+  <p data-empty-reason data-i18n="{{ reason_key }}">{{ reason }}</p>
+  <div data-empty-next-step>
+    <strong data-i18n="empty.next_safe_step">Next safe step</strong>
+    <code>{{ command }}</code>
+  </div>
+  <p data-empty-success><strong data-i18n="empty.success_condition">Success condition:</strong> <span data-i18n="{{ success_key }}">{{ success_condition }}</span></p>
+</section>
+{%- endmacro %}

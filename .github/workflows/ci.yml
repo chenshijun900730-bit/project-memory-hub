@@ -1,0 +1,106 @@
+name: macOS blocking CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: macOS blocking quality, tests, build, and privacy
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Select Python 3.11
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Synchronize the locked test environment
+        run: |
+          uv lock --check
+          uv sync --locked --extra test
+      - name: Install the explicit Chromium runtime
+        run: uv run playwright install chromium
+      - name: Check formatting
+        run: uv run ruff format --check .
+      - name: Lint Python
+        run: uv run ruff check .
+      - name: Type-check the package strictly
+        run: uv run mypy src/project_memory_hub
+      - name: Run branch coverage gate
+        run: uv run pytest --cov=project_memory_hub --cov-branch --cov-fail-under=85
+      - name: Parse-check browser JavaScript
+        run: |
+          node --check src/project_memory_hub/web/static/i18n.js
+          node --check src/project_memory_hub/web/static/projects.js
+          node --check src/project_memory_hub/web/static/sources.js
+      - name: Run Chromium end-to-end tests
+        run: uv run pytest tests/e2e -q
+      - name: Build and inspect distribution metadata
+        run: |
+          test ! -e release-dist
+          uv build --wheel --sdist --out-dir release-dist
+          uv run twine check release-dist/*
+          uv run python scripts/verify_wheel.py
+      - name: Verify synthetic demo privacy and public links
+        run: |
+          uv run python scripts/verify_public_assets.py docs/assets
+          uv run python scripts/verify_document_links.py
+      - name: Verify workflow policy
+        run: >-
+          uv run python scripts/verify_workflows.py .github/workflows
+          --secret-scanning .github/secret_scanning.yml
+
+  artifact-smoke:
+    name: macOS blocking clean artifact smoke (Python 3.11 and 3.12)
+    needs: quality
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Select clean smoke Python 3.11
+        id: python-311
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+      - name: Select clean smoke Python 3.12
+        id: python-312
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Synchronize the locked test environment
+        run: |
+          uv lock --check
+          uv sync --locked --extra test
+      - name: Build a fresh artifact pair
+        run: |
+          test ! -e release-dist
+          uv build --wheel --sdist --out-dir release-dist
+          uv run twine check release-dist/*
+      - name: Install and smoke-test the wheel in a clean environment
+        run: |
+          python_311="$(uv python find --system 3.11)"
+          python_312="$(uv python find --system 3.12)"
+          uv run python scripts/verify_release_artifacts.py \
+            --dist release-dist \
+            --smoke-python "$python_311" \
+            --smoke-python "$python_312"

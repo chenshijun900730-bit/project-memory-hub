@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n="document.{{ title|lower }}">{{ title }} · Project Memory Hub</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <script src="/static/i18n.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content" data-i18n="a11y.skip_to_content">Skip to content</a>
+    <header class="masthead">
+      <div>
+        <p class="eyebrow" data-i18n="masthead.eyebrow">Local operations ledger</p>
+        <a class="wordmark" href="/" data-i18n="brand.name">Project Memory Hub</a>
+      </div>
+      <div class="masthead-tools">
+        <p class="boundary"><span aria-hidden="true"></span><span data-i18n="masthead.loopback_only">Loopback only</span></p>
+        <div class="language-switch" role="group" aria-label="Language" data-i18n-aria-label="language.selector">
+          <button type="button" lang="zh-CN" data-language-option="zh-CN" aria-pressed="false" data-i18n="language.chinese">中文</button>
+          <button type="button" lang="en" data-language-option="en" aria-pressed="true" data-i18n="language.english">English</button>
+        </div>
+      </div>
+    </header>
+    <nav class="rail" aria-label="Primary navigation" data-i18n-aria-label="a11y.primary_navigation">
+      <a href="/" data-i18n="nav.overview"{% if title == "Overview" %} aria-current="page"{% endif %}>Overview</a>
+      <a href="/setup" data-i18n="nav.setup"{% if title == "Setup" %} aria-current="page"{% endif %}>Setup</a>
+      <a href="/sources" data-i18n="nav.sources"{% if title == "Sources" %} aria-current="page"{% endif %}>Sources</a>
+      <a href="/projects" data-i18n="nav.projects"{% if title == "Projects" %} aria-current="page"{% endif %}>Projects</a>
+      <a href="/memories" data-i18n="nav.memories"{% if title == "Memories" %} aria-current="page"{% endif %}>Memories</a>
+      <a href="/imports" data-i18n="nav.imports"{% if title == "Imports" %} aria-current="page"{% endif %}>Imports</a>
+      <a href="/proposals" data-i18n="nav.proposals"{% if title == "Proposals" %} aria-current="page"{% endif %}>Proposals</a>
+      <a href="/settings" data-i18n="nav.settings"{% if title == "Settings" %} aria-current="page"{% endif %}>Settings</a>
+    </nav>
+    <main id="content" class="page">
+      <header class="page-heading">
+        <p class="index" data-i18n="index.{{ title|lower }}">PMH / {{ title|upper }}</p>
+        <h1 data-i18n="page.{{ title|lower }}">{{ title }}</h1>
+      </header>
+      {% block content %}{% endblock %}
+    </main>
+    <footer>
+      <p data-i18n="footer.privacy">Private by default. Raw conversations and access tokens are never shown here.</p>
+    </footer>
+  </body>
+</html>
